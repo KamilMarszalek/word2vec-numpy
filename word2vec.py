@@ -27,3 +27,7 @@ def init_model(vocab_size: int, emb_dim: int) -> tuple[np.ndarray, np.ndarray]:
         size=(vocab_size, emb_dim),
     )
     return W_in, W_out
+
+
+def sigmoid(x: np.ndarray | int) -> int:
+    return 1 / (1 + np.exp(-x))
