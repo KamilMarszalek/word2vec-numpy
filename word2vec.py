@@ -104,7 +104,7 @@ def preprocess(text: str) -> tuple[list[int], dict[str, int], list[str]]:
     return corpus, word_to_id, id_to_word
 
 
-def get_similarity(
+def get_similarity_between_words(
     word1: str,
     word2: str,
     W_in: np.ndarray,
@@ -113,7 +113,11 @@ def get_similarity(
     ind1, ind2 = word_to_id[word1], word_to_id[word2]
     h1, h2 = W_in[ind1], W_in[ind2]
 
-    return np.dot(h1, h2) / (np.linalg.norm(h1) * np.linalg.norm(h2))
+    return cosine_similarity(h1, h2)
+
+
+def cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
+    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
 
 def create_synthetic_corpus() -> string:
@@ -141,6 +145,21 @@ def create_synthetic_corpus() -> string:
         corpus_text.append(random.choice(templates))
 
     return " ".join(corpus_text)
+
+
+def find_closest(
+    vector: np.ndarray,
+    W_in: np.ndarray,
+    id_to_word: list[str],
+) -> str:
+    best = -1
+    best_ind = -1
+    for ind, elem in enumerate(W_in.tolist()):
+        score = cosine_similarity(vector, elem)
+        if score > best:
+            best = score
+            best_ind = ind
+    return id_to_word[best_ind]
 
 
 if __name__ == "__main__":
@@ -171,10 +190,10 @@ if __name__ == "__main__":
 
     print(
         'Similarity between "król" and "królowa"',
-        get_similarity("król", "królowa", W_in, word_to_id),
+        get_similarity_between_words("król", "królowa", W_in, word_to_id),
     )
 
     print(
         'Similarity between "król" and "mężczyzna"',
-        get_similarity("król", "mężczyzna", W_in, word_to_id),
+        get_similarity_between_words("król", "mężczyzna", W_in, word_to_id),
     )
