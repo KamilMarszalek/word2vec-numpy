@@ -31,3 +31,35 @@ def init_model(vocab_size: int, emb_dim: int) -> tuple[np.ndarray, np.ndarray]:
 
 def sigmoid(x: np.ndarray | int) -> int:
     return 1 / (1 + np.exp(-x))
+
+
+def train_step(
+    center_idx: int,
+    context_idx: int,
+    W_in: np.ndarray,
+    W_out: np.ndarray,
+    learning_rate: float,
+    k_neg: int,
+) -> None:
+    h = W_in[center_idx]
+    v_pos = W_out[context_idx]
+
+    grad_h = np.zeros_like(h)
+
+    z = h @ v_pos
+
+    prob = sigmoid(z)
+    error = prob - 1
+    grad_h += error * v_pos
+    W_out[context_idx] -= learning_rate * error * h
+
+    for _ in range(k_neg):
+        noise_idx = np.random.randint(0, W_in.shape[0])
+        # OPTIONAL: check if noise_idx == context_idx
+        v_neg = W_out[noise_idx]
+        z = h @ v_neg
+        error = sigmoid(z)
+        grad_h += error * v_neg
+        W_out[noise_idx] -= learning_rate * error * h
+
+    W_in[center_idx] -= learning_rate * grad_h
