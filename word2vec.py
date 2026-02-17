@@ -1,3 +1,5 @@
+import string
+
 import numpy as np
 
 
@@ -83,3 +85,19 @@ def train(
             train_step(center, context, W_in, W_out, learning_rate, k_neg)
 
     return W_in, W_out
+
+
+def preprocess(text: str) -> tuple[list[int], dict[str, int], list[str]]:
+    lowercase_text = text.lower()
+    lowercase_no_punctuation = lowercase_text.translate(
+        str.maketrans("", "", string.punctuation)
+    )
+    words = lowercase_no_punctuation.split()
+    id_to_word = list(set(words))
+    word_to_id = {}
+    for i, word in enumerate(id_to_word):
+        word_to_id[word] = i
+
+    corpus = [word_to_id[word] for word in words]
+
+    return corpus, word_to_id, id_to_word
