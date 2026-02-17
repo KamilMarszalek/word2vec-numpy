@@ -154,7 +154,7 @@ def find_closest(
 ) -> str:
     best = -1
     best_ind = -1
-    for ind, elem in enumerate(W_in.tolist()):
+    for ind, elem in enumerate(W_in):
         score = cosine_similarity(vector, elem)
         if score > best:
             best = score
@@ -197,3 +197,13 @@ if __name__ == "__main__":
         'Similarity between "król" and "mężczyzna"',
         get_similarity_between_words("król", "mężczyzna", W_in, word_to_id),
     )
+
+    target_vector = (
+        W_in[word_to_id["król"]]
+        - W_in[word_to_id["mężczyzna"]]
+        + W_in[word_to_id["kobieta"]]
+    )
+
+    print('"król" - "mężczyzna" + "kobieta"')
+    print("Expected: królowa")
+    print("Result:", find_closest(target_vector, W_in, id_to_word))
