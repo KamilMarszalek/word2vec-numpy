@@ -1,3 +1,4 @@
+import random
 import string
 
 import numpy as np
@@ -115,15 +116,42 @@ def get_similarity(
     return np.dot(h1, h2) / (np.linalg.norm(h1) * np.linalg.norm(h2))
 
 
+def create_synthetic_corpus() -> string:
+    templates = [
+        "król rządzi królestwem",
+        "królowa rządzi królestwem",
+        "król jest mądrym mężczyzną",
+        "królowa jest mądrą kobietą",
+        "mężczyzna to król",
+        "kobieta to królowa",
+        "król nosi złotą koronę",
+        "królowa nosi złotą koronę",
+        "władca to inaczej król",
+        "władczyni to inaczej królowa",
+        "król kocha swój lud",
+        "królowa kocha swój lud",
+        "książę to syn króla",
+        "księżniczka to córka królowej",
+        "mężczyzna silny jak król",
+        "kobieta piękna jak królowa",
+    ]
+
+    corpus_text = []
+    for _ in range(2000):
+        corpus_text.append(random.choice(templates))
+
+    return " ".join(corpus_text)
+
+
 if __name__ == "__main__":
-    text = "Król lubi złoto i królowa lubi złoto"
+    text = create_synthetic_corpus()
     corpus, word_to_id, id_to_word = preprocess(text)
 
     window_size = 2
-    emb_dim = 5
-    epochs = 100
-    learning_rate = 0.1
-    k_neg = 3
+    emb_dim = 10
+    epochs = 500
+    learning_rate = 0.05
+    k_neg = 5
 
     W_in, W_out = train(
         corpus,
@@ -147,6 +175,6 @@ if __name__ == "__main__":
     )
 
     print(
-        'Similarity between "król" and "lubi"',
-        get_similarity("król", "lubi", W_in, word_to_id),
+        'Similarity between "król" and "mężczyzna"',
+        get_similarity("król", "mężczyzna", W_in, word_to_id),
     )
