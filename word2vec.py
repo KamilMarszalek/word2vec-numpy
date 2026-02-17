@@ -13,3 +13,17 @@ def generate_training_data(
                 continue
             output.append((center, corpus[j]))
     return output
+
+
+def init_model(vocab_size: int, emb_dim: int) -> tuple[np.ndarray, np.ndarray]:
+    W_in = np.random.uniform(
+        -0.5 / emb_dim,
+        0.5 / emb_dim,
+        size=(vocab_size, emb_dim),
+    )
+    W_out = np.random.uniform(
+        -0.5 / emb_dim,
+        0.5 / emb_dim,
+        size=(vocab_size, emb_dim),
+    )
+    return W_in, W_out
