@@ -63,3 +63,23 @@ def train_step(
         W_out[noise_idx] -= learning_rate * error * h
 
     W_in[center_idx] -= learning_rate * grad_h
+
+
+def train(
+    corpus: list[int],
+    window_size: int,
+    emb_dim: int,
+    epochs: int,
+    learning_rate: float,
+    k_neg: int,
+    vocab_size: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    W_in, W_out = init_model(vocab_size, emb_dim)
+    training_samples = generate_training_data(corpus, window_size)
+
+    for _ in range(epochs):
+        np.random.shuffle(training_samples)
+        for center, context in training_samples:
+            train_step(center, context, W_in, W_out, learning_rate, k_neg)
+
+    return W_in, W_out
