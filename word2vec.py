@@ -101,3 +101,52 @@ def preprocess(text: str) -> tuple[list[int], dict[str, int], list[str]]:
     corpus = [word_to_id[word] for word in words]
 
     return corpus, word_to_id, id_to_word
+
+
+def get_similarity(
+    word1: str,
+    word2: str,
+    W_in: np.ndarray,
+    word_to_id: dict[str, int],
+) -> float:
+    ind1, ind2 = word_to_id[word1], word_to_id[word2]
+    h1, h2 = W_in[ind1], W_in[ind2]
+
+    return np.dot(h1, h2) / (np.linalg.norm(h1) * np.linalg.norm(h2))
+
+
+if __name__ == "__main__":
+    text = "Król lubi złoto i królowa lubi złoto"
+    corpus, word_to_id, id_to_word = preprocess(text)
+
+    window_size = 2
+    emb_dim = 5
+    epochs = 100
+    learning_rate = 0.1
+    k_neg = 3
+
+    W_in, W_out = train(
+        corpus,
+        window_size,
+        emb_dim,
+        epochs,
+        learning_rate,
+        k_neg,
+        len(word_to_id),
+    )
+
+    print(W_in)
+    print(W_out)
+
+    print("W_in shape:", W_in.shape)
+    print("W_out shape:", W_out.shape)
+
+    print(
+        'Similarity between "król" and "królowa"',
+        get_similarity("król", "królowa", W_in, word_to_id),
+    )
+
+    print(
+        'Similarity between "król" and "lubi"',
+        get_similarity("król", "lubi", W_in, word_to_id),
+    )
