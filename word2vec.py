@@ -84,7 +84,7 @@ class Word2VecAlgo:
         self.W_in[center_idx] -= self.config.learning_rate * grad_h
 
 
-def sigmoid(x: np.ndarray | int) -> int:
+def sigmoid(x: np.ndarray | int) -> float:
     return 1 / (1 + np.exp(-x))
 
 
