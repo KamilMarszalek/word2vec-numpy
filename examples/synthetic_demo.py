@@ -45,7 +45,13 @@ if __name__ == "__main__":
 
     algo = Word2VecSGNS(
         Word2VecSGNSConfig(
-            window_size, emb_dim, epochs, learning_rate, k_neg, len(word_to_id), seed
+            window_size,
+            emb_dim,
+            epochs,
+            learning_rate,
+            k_neg,
+            len(word_to_id),
+            seed,
         ),
         corpus,
         word_to_id,

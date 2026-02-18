@@ -7,7 +7,7 @@ def preprocess(text: str) -> tuple[list[int], dict[str, int], list[str]]:
         str.maketrans("", "", string.punctuation)
     )
     words = lowercase_no_punctuation.split()
-    id_to_word = list(set(words))
+    id_to_word = list(dict.fromkeys(words))
     word_to_id = {}
     for i, word in enumerate(id_to_word):
         word_to_id[word] = i

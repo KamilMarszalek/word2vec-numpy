@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 import numpy as np
-from data import generate_training_data
+
+from .data import generate_training_data
 
 
 def sigmoid(x: np.ndarray | int) -> float:
@@ -28,15 +29,16 @@ class Word2VecSGNS:
         id_to_word: list[str],
     ) -> None:
         self.config = config
+        self.rng = np.random.default_rng(self.config.seed)
         self.corpus = corpus
         self.word_to_id = word_to_id
         self.id_to_word = id_to_word
-        self.W_in = np.random.uniform(
+        self.W_in = self.rng.uniform(
             -0.5 / self.config.emb_dim,
             0.5 / self.config.emb_dim,
             size=(self.config.vocab_size, self.config.emb_dim),
         )
-        self.W_out = np.random.uniform(
+        self.W_out = self.rng.uniform(
             -0.5 / self.config.emb_dim,
             0.5 / self.config.emb_dim,
             size=(self.config.vocab_size, self.config.emb_dim),
@@ -49,7 +51,7 @@ class Word2VecSGNS:
         )
 
         for _ in range(self.config.epochs):
-            np.random.shuffle(training_samples)
+            self.rng.shuffle(training_samples)
             for center, context in training_samples:
                 self._train_step(center, context)
 
@@ -69,7 +71,7 @@ class Word2VecSGNS:
         self.W_out[context_idx] -= self.config.learning_rate * error * h
 
         for _ in range(self.config.num_of_neg_samples):
-            noise_idx = np.random.randint(0, self.W_in.shape[0])
+            noise_idx = self.rng.randint(0, self.W_in.shape[0])
             # OPTIONAL: check if noise_idx == context_idx
             v_neg = self.W_out[noise_idx]
             z = h @ v_neg
