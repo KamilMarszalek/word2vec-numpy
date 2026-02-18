@@ -1,5 +1,7 @@
 import numpy as np
 
+EPS = 1e-6
+
 
 def get_similarity_between_words(
     word1: str,
@@ -14,7 +16,7 @@ def get_similarity_between_words(
 
 
 def cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
-    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2) + EPS)
 
 
 def find_closest(

@@ -5,7 +5,7 @@ import numpy as np
 from .data import generate_training_data
 
 
-def sigmoid(x: np.ndarray | int) -> float:
+def sigmoid(x: np.ndarray | int) -> float | np.ndarray:
     return 1 / (1 + np.exp(-x))
 
 
@@ -71,7 +71,7 @@ class Word2VecSGNS:
         self.W_out[context_idx] -= self.config.learning_rate * error * h
 
         for _ in range(self.config.num_of_neg_samples):
-            noise_idx = self.rng.randint(0, self.W_in.shape[0])
+            noise_idx = self.rng.integers(0, self.W_in.shape[0])
             # OPTIONAL: check if noise_idx == context_idx
             v_neg = self.W_out[noise_idx]
             z = h @ v_neg

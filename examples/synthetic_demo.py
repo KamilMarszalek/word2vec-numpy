@@ -43,6 +43,8 @@ if __name__ == "__main__":
     k_neg = 5
     seed = 42
 
+    random.seed(seed)
+
     algo = Word2VecSGNS(
         Word2VecSGNSConfig(
             window_size,
