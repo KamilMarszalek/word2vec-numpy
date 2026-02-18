@@ -10,7 +10,7 @@ class Word2VecConfig:
     window_size: int
     emb_dim: int
     epochs: int
-    learning_rate: int
+    learning_rate: float
     num_of_neg_samples: int
     vocab_size: int
 
@@ -46,7 +46,7 @@ class Word2VecAlgo:
             for center, context in training_samples:
                 self._train_step(center, context)
 
-        return W_in, W_out
+        return self.W_in, self.W_out
 
     def _generate_training_data(self) -> list[tuple[int, int]]:
         output = []
@@ -56,7 +56,7 @@ class Word2VecAlgo:
             for j in range(start, end + 1):
                 if j == i:
                     continue
-                output.append((center, corpus[j]))
+                output.append((center, self.corpus[j]))
         return output
 
     def _train_step(self, center_idx: int, context_idx: int) -> None:
@@ -81,7 +81,7 @@ class Word2VecAlgo:
             grad_h += error * v_neg
             self.W_out[noise_idx] -= self.config.learning_rate * error * h
 
-        self.W_in[center_idx] -= self.learning_rate * grad_h
+        self.W_in[center_idx] -= self.config.learning_rate * grad_h
 
 
 def sigmoid(x: np.ndarray | int) -> int:
