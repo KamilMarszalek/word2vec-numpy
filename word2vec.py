@@ -1,7 +1,18 @@
 import random
 import string
+from dataclasses import dataclass
 
 import numpy as np
+
+
+@dataclass
+class Word2VecConfig:
+    window_size: int
+    emb_dim: int
+    epochs: int
+    learning_rate: int
+    num_of_neg_samples: int
+    vocab_size: int
 
 
 def generate_training_data(
