@@ -1,6 +1,6 @@
 import numpy as np
 
-EPS = 1e-6
+EPS = 1e-8
 
 
 def get_similarity_between_words(
