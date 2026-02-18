@@ -15,88 +15,77 @@ class Word2VecConfig:
     vocab_size: int
 
 
-def generate_training_data(
-    corpus: list[int], window_size: int
-) -> list[tuple[int, int]]:
-    output = []
-    for i, center in enumerate(corpus):
-        start = max(i - window_size, 0)
-        end = min(i + window_size, len(corpus) - 1)
-        for j in range(start, end + 1):
-            if j == i:
-                continue
-            output.append((center, corpus[j]))
-    return output
+class Word2VecAlgo:
+    def __init__(
+        self,
+        config: Word2VecConfig,
+        corpus: list[int],
+        word_to_id: dict[str, int],
+        id_to_word: list[str],
+    ) -> None:
+        self.config = config
+        self.corpus = corpus
+        self.word_to_id = word_to_id
+        self.id_to_word = id_to_word
+        self.W_in = np.random.uniform(
+            -0.5 / self.config.emb_dim,
+            0.5 / self.config.emb_dim,
+            size=(self.config.vocab_size, self.config.emb_dim),
+        )
+        self.W_out = np.random.uniform(
+            -0.5 / self.config.emb_dim,
+            0.5 / self.config.emb_dim,
+            size=(self.config.vocab_size, self.config.emb_dim),
+        )
 
+    def train(self) -> tuple[np.ndarray, np.ndarray]:
+        training_samples = self._generate_training_data()
 
-def init_model(vocab_size: int, emb_dim: int) -> tuple[np.ndarray, np.ndarray]:
-    W_in = np.random.uniform(
-        -0.5 / emb_dim,
-        0.5 / emb_dim,
-        size=(vocab_size, emb_dim),
-    )
-    W_out = np.random.uniform(
-        -0.5 / emb_dim,
-        0.5 / emb_dim,
-        size=(vocab_size, emb_dim),
-    )
-    return W_in, W_out
+        for _ in range(self.config.epochs):
+            np.random.shuffle(training_samples)
+            for center, context in training_samples:
+                self._train_step(center, context)
+
+        return W_in, W_out
+
+    def _generate_training_data(self) -> list[tuple[int, int]]:
+        output = []
+        for i, center in enumerate(self.corpus):
+            start = max(i - self.config.window_size, 0)
+            end = min(i + self.config.window_size, len(self.corpus) - 1)
+            for j in range(start, end + 1):
+                if j == i:
+                    continue
+                output.append((center, corpus[j]))
+        return output
+
+    def _train_step(self, center_idx: int, context_idx: int) -> None:
+        h = self.W_in[center_idx]
+        v_pos = self.W_out[context_idx]
+
+        grad_h = np.zeros_like(h)
+
+        z = h @ v_pos
+
+        prob = sigmoid(z)
+        error = prob - 1
+        grad_h += error * v_pos
+        self.W_out[context_idx] -= self.config.learning_rate * error * h
+
+        for _ in range(self.config.num_of_neg_samples):
+            noise_idx = np.random.randint(0, self.W_in.shape[0])
+            # OPTIONAL: check if noise_idx == context_idx
+            v_neg = self.W_out[noise_idx]
+            z = h @ v_neg
+            error = sigmoid(z)
+            grad_h += error * v_neg
+            self.W_out[noise_idx] -= self.config.learning_rate * error * h
+
+        self.W_in[center_idx] -= self.learning_rate * grad_h
 
 
 def sigmoid(x: np.ndarray | int) -> int:
     return 1 / (1 + np.exp(-x))
-
-
-def train_step(
-    center_idx: int,
-    context_idx: int,
-    W_in: np.ndarray,
-    W_out: np.ndarray,
-    learning_rate: float,
-    k_neg: int,
-) -> None:
-    h = W_in[center_idx]
-    v_pos = W_out[context_idx]
-
-    grad_h = np.zeros_like(h)
-
-    z = h @ v_pos
-
-    prob = sigmoid(z)
-    error = prob - 1
-    grad_h += error * v_pos
-    W_out[context_idx] -= learning_rate * error * h
-
-    for _ in range(k_neg):
-        noise_idx = np.random.randint(0, W_in.shape[0])
-        # OPTIONAL: check if noise_idx == context_idx
-        v_neg = W_out[noise_idx]
-        z = h @ v_neg
-        error = sigmoid(z)
-        grad_h += error * v_neg
-        W_out[noise_idx] -= learning_rate * error * h
-
-    W_in[center_idx] -= learning_rate * grad_h
-
-
-def train(
-    corpus: list[int],
-    window_size: int,
-    emb_dim: int,
-    epochs: int,
-    learning_rate: float,
-    k_neg: int,
-    vocab_size: int,
-) -> tuple[np.ndarray, np.ndarray]:
-    W_in, W_out = init_model(vocab_size, emb_dim)
-    training_samples = generate_training_data(corpus, window_size)
-
-    for _ in range(epochs):
-        np.random.shuffle(training_samples)
-        for center, context in training_samples:
-            train_step(center, context, W_in, W_out, learning_rate, k_neg)
-
-    return W_in, W_out
 
 
 def preprocess(text: str) -> tuple[list[int], dict[str, int], list[str]]:
@@ -183,15 +172,21 @@ if __name__ == "__main__":
     learning_rate = 0.05
     k_neg = 5
 
-    W_in, W_out = train(
+    algo = Word2VecAlgo(
+        Word2VecConfig(
+            window_size,
+            emb_dim,
+            epochs,
+            learning_rate,
+            k_neg,
+            len(word_to_id),
+        ),
         corpus,
-        window_size,
-        emb_dim,
-        epochs,
-        learning_rate,
-        k_neg,
-        len(word_to_id),
+        word_to_id,
+        id_to_word,
     )
+
+    W_in, W_out = algo.train()
 
     print(W_in)
     print(W_out)
