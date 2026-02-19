@@ -7,22 +7,22 @@ from word2vec.model import Word2VecSGNS, Word2VecSGNSConfig
 
 def create_synthetic_corpus() -> str:
     templates = [
-        "król rządzi królestwem",
-        "królowa rządzi królestwem",
-        "król jest mądrym mężczyzną",
-        "królowa jest mądrą kobietą",
-        "mężczyzna to król",
-        "kobieta to królowa",
-        "król nosi złotą koronę",
-        "królowa nosi złotą koronę",
-        "władca to inaczej król",
-        "władczyni to inaczej królowa",
-        "król kocha swój lud",
-        "królowa kocha swój lud",
-        "książę to syn króla",
-        "księżniczka to córka królowej",
-        "mężczyzna silny jak król",
-        "kobieta piękna jak królowa",
+        "king rules kingdom",
+        "queen rules kingdom",
+        "king is wise man",
+        "queen is wise woman",
+        "man is king",
+        "woman is queen",
+        "king wears golden crown",
+        "queen wears golden crown",
+        "ruler means king",
+        "female ruler means queen",
+        "king loves his people",
+        "queen loves her people",
+        "prince is son of king",
+        "princess is daughter of queen",
+        "man strong like king",
+        "woman beautiful like queen",
     ]
 
     corpus_text = []
@@ -69,21 +69,21 @@ if __name__ == "__main__":
     print("W_out shape:", W_out.shape)
 
     print(
-        'Similarity between "król" and "królowa"',
-        get_similarity_between_words("król", "królowa", W_in, word_to_id),
+        'Similarity between "king" and "queen"',
+        get_similarity_between_words("king", "queen", W_in, word_to_id),
     )
 
     print(
-        'Similarity between "król" and "mężczyzna"',
-        get_similarity_between_words("król", "mężczyzna", W_in, word_to_id),
+        'Similarity between "king" and "man"',
+        get_similarity_between_words("king", "man", W_in, word_to_id),
     )
 
     target_vector = (
-        W_in[word_to_id["król"]]
-        - W_in[word_to_id["mężczyzna"]]
-        + W_in[word_to_id["kobieta"]]
+        W_in[word_to_id["king"]]
+        - W_in[word_to_id["man"]]
+        + W_in[word_to_id["woman"]]
     )
 
-    print('"król" - "mężczyzna" + "kobieta"')
-    print("Expected: królowa")
+    print('"king" - "man" + "woman"')
+    print("Expected: queen")
     print("Result:", find_closest(target_vector, W_in, id_to_word))
