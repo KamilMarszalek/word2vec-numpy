@@ -27,6 +27,7 @@ class Word2VecSGNS:
         corpus: list[int],
         word_to_id: dict[str, int],
         id_to_word: list[str],
+        unigram_probs: np.ndarray,
     ) -> None:
         self.config = config
         self.rng = np.random.default_rng(self.config.seed)
@@ -44,6 +45,7 @@ class Word2VecSGNS:
             0.5 / self.config.emb_dim,
             size=(self.config.vocab_size, self.config.emb_dim),
         )
+        self.unigram_probs = unigram_probs
 
     def train(self) -> tuple[np.ndarray, np.ndarray]:
         training_samples = generate_training_data(
@@ -78,8 +80,9 @@ class Word2VecSGNS:
 
         loss_neg = 0.0
         for _ in range(self.config.num_of_neg_samples):
-            noise_idx = self.rng.integers(0, self.W_in.shape[0])
-            # OPTIONAL: check if noise_idx == context_idx
+            noise_idx = self.rng.choice(
+                self.unigram_probs.shape[0], p=self.unigram_probs
+            )
             v_neg = self.W_out[noise_idx]
             z_neg = h @ v_neg
             error = sigmoid(z_neg)
