@@ -33,6 +33,7 @@ class Word2VecSGNS:
         self.corpus = corpus
         self.word_to_id = word_to_id
         self.id_to_word = id_to_word
+        self.loss_history = []
         self.W_in = self.rng.uniform(
             -0.5 / self.config.emb_dim,
             0.5 / self.config.emb_dim,
@@ -50,33 +51,41 @@ class Word2VecSGNS:
             self.config.window_size,
         )
 
-        for _ in range(self.config.epochs):
+        for epoch in range(self.config.epochs):
             self.rng.shuffle(training_samples)
+            epoch_loss_sum = 0.0
             for center, context in training_samples:
-                self._train_step(center, context)
+                loss = self._train_step(center, context)
+                self.loss_history.append(loss)
+                epoch_loss_sum += loss
+            print(f"Epoch {epoch + 1} loss:", epoch_loss_sum / len(training_samples))
 
         return self.W_in, self.W_out
 
-    def _train_step(self, center_idx: int, context_idx: int) -> None:
+    def _train_step(self, center_idx: int, context_idx: int) -> float:
         h = self.W_in[center_idx]
         v_pos = self.W_out[context_idx]
 
         grad_h = np.zeros_like(h)
 
-        z = h @ v_pos
+        z_pos = h @ v_pos
 
-        prob = sigmoid(z)
+        prob = sigmoid(z_pos)
+        loss_pos = np.logaddexp(0.0, -z_pos)
         error = prob - 1
         grad_h += error * v_pos
         self.W_out[context_idx] -= self.config.learning_rate * error * h
 
+        loss_neg = 0.0
         for _ in range(self.config.num_of_neg_samples):
             noise_idx = self.rng.integers(0, self.W_in.shape[0])
             # OPTIONAL: check if noise_idx == context_idx
             v_neg = self.W_out[noise_idx]
-            z = h @ v_neg
-            error = sigmoid(z)
+            z_neg = h @ v_neg
+            error = sigmoid(z_neg)
+            loss_neg += np.logaddexp(0.0, z_neg)
             grad_h += error * v_neg
             self.W_out[noise_idx] -= self.config.learning_rate * error * h
 
         self.W_in[center_idx] -= self.config.learning_rate * grad_h
+        return loss_pos + loss_neg
