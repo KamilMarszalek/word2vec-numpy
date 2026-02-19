@@ -33,17 +33,16 @@ def create_synthetic_corpus() -> str:
 
 
 if __name__ == "__main__":
+    seed = 42
+    random.seed(seed)
     text = create_synthetic_corpus()
-    corpus, word_to_id, id_to_word = preprocess(text)
+    corpus, word_to_id, id_to_word, unigram_probs = preprocess(text)
 
     window_size = 2
     emb_dim = 10
     epochs = 500
     learning_rate = 0.05
     k_neg = 5
-    seed = 42
-
-    random.seed(seed)
 
     algo = Word2VecSGNS(
         Word2VecSGNSConfig(
@@ -58,6 +57,7 @@ if __name__ == "__main__":
         corpus,
         word_to_id,
         id_to_word,
+        unigram_probs,
     )
 
     W_in, W_out = algo.train()
@@ -79,9 +79,7 @@ if __name__ == "__main__":
     )
 
     target_vector = (
-        W_in[word_to_id["king"]]
-        - W_in[word_to_id["man"]]
-        + W_in[word_to_id["woman"]]
+        W_in[word_to_id["king"]] - W_in[word_to_id["man"]] + W_in[word_to_id["woman"]]
     )
 
     print('"king" - "man" + "woman"')
