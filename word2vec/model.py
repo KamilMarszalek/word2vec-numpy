@@ -60,7 +60,7 @@ class Word2VecSGNS:
                 self.loss_history.append(loss)
                 epoch_loss_sum += loss
                 steps += 1
-            print(f"Epoch {epoch + 1} loss:, {epoch_loss_sum / steps:.4f}")
+            print(f"Epoch {epoch + 1} loss: {epoch_loss_sum / steps:.4f}")
 
         return self.W_in, self.W_out
 
