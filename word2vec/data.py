@@ -1,5 +1,6 @@
 import string
 from collections import Counter
+from collections.abc import Iterator
 
 import numpy as np
 
@@ -35,14 +36,17 @@ def preprocess(
 
 
 def generate_training_data(
-    corpus: list[int], window_size: int
-) -> list[tuple[int, int]]:
-    output = []
-    for i, center in enumerate(corpus):
+    corpus: list[int],
+    window_size: int,
+    rng: np.random.Generator,
+) -> Iterator[tuple[int, int]]:
+    n = len(corpus)
+    for i in rng.permutation(n):
+        center = corpus[i]
         start = max(i - window_size, 0)
-        end = min(i + window_size, len(corpus) - 1)
-        for j in range(start, end + 1):
-            if j == i:
-                continue
-            output.append((center, corpus[j]))
-    return output
+        end = min(i + window_size, n - 1)
+        ctx_positions = [pos for pos in range(start, end + 1) if pos != i]
+        rng.shuffle(ctx_positions)
+
+        for j in ctx_positions:
+            yield center, corpus[j]
