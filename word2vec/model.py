@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .data import generate_training_data
+from .data import iter_train_data
 
 
 def sigmoid(x: np.ndarray | int) -> float | np.ndarray:
@@ -48,19 +48,19 @@ class Word2VecSGNS:
         self.unigram_probs = unigram_probs
 
     def train(self) -> tuple[np.ndarray, np.ndarray]:
-        training_samples = generate_training_data(
-            self.corpus,
-            self.config.window_size,
-        )
-
         for epoch in range(self.config.epochs):
-            self.rng.shuffle(training_samples)
             epoch_loss_sum = 0.0
-            for center, context in training_samples:
+            steps = 0
+            for center, context in iter_train_data(
+                self.corpus,
+                self.config.window_size,
+                self.rng,
+            ):
                 loss = self._train_step(center, context)
                 self.loss_history.append(loss)
                 epoch_loss_sum += loss
-            print(f"Epoch {epoch + 1} loss:", epoch_loss_sum / len(training_samples))
+                steps += 1
+            print(f"Epoch {epoch + 1} loss:, {epoch_loss_sum / steps:.4f}")
 
         return self.W_in, self.W_out
 

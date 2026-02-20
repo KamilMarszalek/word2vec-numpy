@@ -35,7 +35,7 @@ def preprocess(
     return corpus, word_to_id, id_to_word, unigram_probs
 
 
-def generate_training_data(
+def iter_train_data(
     corpus: list[int],
     window_size: int,
     rng: np.random.Generator,
