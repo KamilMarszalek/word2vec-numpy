@@ -1,7 +1,8 @@
 import random
 
+from word2vec.config import Word2VecSGNSConfig
 from word2vec.data import preprocess
-from word2vec.model import Word2VecSGNS, Word2VecSGNSConfig
+from word2vec.model import Word2VecSGNS
 
 
 def create_synthetic_corpus() -> str:
