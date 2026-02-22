@@ -1,1 +1,1 @@
-Word2vec implementation in Python using pure NumPy.
+Word2vec implementation in Python using NumPy.
