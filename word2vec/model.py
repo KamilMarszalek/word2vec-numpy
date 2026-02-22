@@ -28,7 +28,7 @@ class Word2VecSGNSConfig:
     vocab_size: int
     seed: int
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if (
             self.window_size < 1
             or self.emb_dim < 1
@@ -115,14 +115,15 @@ class Word2VecSGNS:
         return loss_pos + loss_neg
 
     def _get_k_neg_samples(self, context_idx: int, center_idx: int) -> np.ndarray:
-        output = []
-        if self.unigram_probs.shape[0] <= 2:
-            raise ValueError("Too little indices")
+        output: list[int] = []
+        forbidden = {context_idx, center_idx}
+        if self.unigram_probs.shape[0] <= len(forbidden):
+            raise ValueError("No valid negative sample can be drawn.")
         while len(output) < self.config.num_of_neg_samples:
             noise_idx = self.rng.choice(
                 self.unigram_probs.shape[0], p=self.unigram_probs
             )
-            if noise_idx in {context_idx, center_idx}:
+            if noise_idx in forbidden:
                 continue
             output.append(noise_idx)
         return np.array(output)

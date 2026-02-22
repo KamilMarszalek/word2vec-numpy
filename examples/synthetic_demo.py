@@ -84,4 +84,17 @@ if __name__ == "__main__":
 
     print('"king" - "man" + "woman"')
     print("Expected: queen")
-    print("Result:", find_closest(target_vector, W_in, id_to_word))
+    print(
+        "Result:",
+        find_closest(
+            target_vector,
+            W_in,
+            id_to_word,
+            topn=2,
+            exclude_ids=[
+                word_to_id["king"],
+                word_to_id["man"],
+                word_to_id["woman"],
+            ],
+        ),
+    )

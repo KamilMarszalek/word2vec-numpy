@@ -23,12 +23,29 @@ def find_closest(
     vector: np.ndarray,
     W_in: np.ndarray,
     id_to_word: list[str],
-) -> str:
-    best = -np.inf
-    best_ind = -1
-    for ind, elem in enumerate(W_in):
-        score = cosine_similarity(vector, elem)
-        if score > best:
-            best = score
-            best_ind = ind
-    return id_to_word[best_ind]
+    topn: int = 1,
+    exclude_ids: list[int] | None = None,
+) -> list[tuple[str, float]]:
+    dot_products = W_in @ vector
+
+    norm_vec = np.linalg.norm(vector)
+    norms_W = np.linalg.norm(W_in, axis=1)
+
+    scores = dot_products / ((norms_W * norm_vec) + EPS)
+
+    if exclude_ids is not None:
+        scores[exclude_ids] = -np.inf
+
+    topn = min(topn, len(scores))
+    unsorted_best_indices = np.argpartition(scores, -topn)[-topn:]
+
+    sorted_indices = unsorted_best_indices[
+        np.argsort(scores[unsorted_best_indices])[::-1]
+    ]
+
+    results = []
+    for idx in sorted_indices:
+        word = id_to_word[idx]
+        score = scores[idx]
+        results.append((word, float(score)))
+    return results
