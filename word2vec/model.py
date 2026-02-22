@@ -28,6 +28,17 @@ class Word2VecSGNSConfig:
     vocab_size: int
     seed: int
 
+    def __post_init__(self):
+        if (
+            self.window_size < 1
+            or self.emb_dim < 1
+            or self.epochs < 1
+            or self.learning_rate <= 0
+            or self.num_of_neg_samples < 1
+            or self.vocab_size < 1
+        ):
+            raise ValueError("invalid model initialization params")
+
 
 class Word2VecSGNS:
     def __init__(
@@ -68,6 +79,8 @@ class Word2VecSGNS:
                 loss = self._train_step(center, context)
                 epoch_loss_sum += loss
                 steps += 1
+            if steps == 0:
+                raise ValueError("No training pairs generated")
             mean_loss = epoch_loss_sum / steps
             self.loss_history.append(mean_loss)
             print(f"Epoch {epoch + 1} loss: {mean_loss:.4f}")
@@ -103,6 +116,8 @@ class Word2VecSGNS:
 
     def _get_k_neg_samples(self, context_idx: int, center_idx: int) -> np.ndarray:
         output = []
+        if self.unigram_probs.shape[0] <= 2:
+            raise ValueError("Too little indices")
         while len(output) < self.config.num_of_neg_samples:
             noise_idx = self.rng.choice(
                 self.unigram_probs.shape[0], p=self.unigram_probs
