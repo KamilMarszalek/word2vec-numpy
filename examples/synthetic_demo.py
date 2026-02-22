@@ -1,7 +1,6 @@
 import random
 
 from word2vec.data import preprocess
-from word2vec.eval import find_closest, get_similarity_between_words
 from word2vec.model import Word2VecSGNS, Word2VecSGNSConfig
 
 
@@ -60,36 +59,33 @@ if __name__ == "__main__":
         unigram_probs,
     )
 
-    W_in, W_out = algo.train()
+    embeddings = algo.train()
 
-    print(W_in)
-    print(W_out)
-
-    print("W_in shape:", W_in.shape)
-    print("W_out shape:", W_out.shape)
+    print("W_in shape:", embeddings.W_in.shape)
+    print("W_out shape:", embeddings.W_out.shape)
 
     print(
         'Similarity between "king" and "queen"',
-        get_similarity_between_words("king", "queen", W_in, word_to_id),
+        embeddings.get_similarity_between_words("king", "queen"),
     )
 
     print(
         'Similarity between "king" and "man"',
-        get_similarity_between_words("king", "man", W_in, word_to_id),
+        embeddings.get_similarity_between_words("king", "man"),
     )
 
     target_vector = (
-        W_in[word_to_id["king"]] - W_in[word_to_id["man"]] + W_in[word_to_id["woman"]]
+        embeddings.W_in[word_to_id["king"]]
+        - embeddings.W_in[word_to_id["man"]]
+        + embeddings.W_in[word_to_id["woman"]]
     )
 
     print('"king" - "man" + "woman"')
     print("Expected: queen")
     print(
         "Result:",
-        find_closest(
+        embeddings.find_closest(
             target_vector,
-            W_in,
-            id_to_word,
             topn=2,
             exclude_ids=[
                 word_to_id["king"],

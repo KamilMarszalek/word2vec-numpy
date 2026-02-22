@@ -2,6 +2,7 @@ import numpy as np
 
 from .config import Word2VecSGNSConfig
 from .data import iter_train_data
+from .embeddings import WordEmbeddings
 
 
 def sigmoid(x: float | np.ndarray) -> float | np.ndarray:
@@ -44,7 +45,7 @@ class Word2VecSGNS:
         )
         self.unigram_probs = unigram_probs
 
-    def train(self) -> tuple[np.ndarray, np.ndarray]:
+    def train(self) -> WordEmbeddings:
         for epoch in range(self.config.epochs):
             epoch_loss_sum = 0.0
             steps = 0
@@ -62,7 +63,12 @@ class Word2VecSGNS:
             self.loss_history.append(mean_loss)
             print(f"Epoch {epoch + 1} loss: {mean_loss:.4f}")
 
-        return self.W_in, self.W_out
+        return WordEmbeddings(
+            self.W_in,
+            self.W_out,
+            self.word_to_id,
+            self.id_to_word,
+        )
 
     def _train_step(self, center_idx: int, context_idx: int) -> float:
         h = self.W_in[center_idx].copy()
