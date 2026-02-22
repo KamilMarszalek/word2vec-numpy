@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     window_size = 2
     emb_dim = 10
-    epochs = 500
+    epochs = 100
     learning_rate = 0.05
     k_neg = 5
 
