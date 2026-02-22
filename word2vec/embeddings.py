@@ -36,6 +36,8 @@ class WordEmbeddings:
         topn: int = 1,
         exclude_ids: list[int] | None = None,
     ) -> list[tuple[str, float]]:
+        if topn < 1:
+            raise ValueError("topn must be >= 1")
         dot_products = self.W_in @ vector
 
         norm_vec = np.linalg.norm(vector)
