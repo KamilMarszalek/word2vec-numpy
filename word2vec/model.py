@@ -88,31 +88,30 @@ class Word2VecSGNS:
         return self.W_in, self.W_out
 
     def _train_step(self, center_idx: int, context_idx: int) -> float:
-        h = self.W_in[center_idx]
-        v_pos = self.W_out[context_idx]
-
-        grad_h = np.zeros_like(h)
+        h = self.W_in[center_idx].copy()
+        v_pos = self.W_out[context_idx].copy()
 
         z_pos = h @ v_pos
 
-        prob = sigmoid(z_pos)
+        prob_pos = sigmoid(z_pos)
         loss_pos = np.logaddexp(0.0, -z_pos)
-        error = prob - 1
-        grad_h += error * v_pos
+        error = prob_pos - 1
+        grad_h = error * v_pos
         self.W_out[context_idx] -= self.config.learning_rate * error * h
 
-        loss_neg = 0.0
         noise_indices = self._get_k_neg_samples()
-        for noise_idx in noise_indices:
-            v_neg = self.W_out[noise_idx]
-            z_neg = h @ v_neg
-            error = sigmoid(z_neg)
-            loss_neg += np.logaddexp(0.0, z_neg)
-            grad_h += error * v_neg
-            self.W_out[noise_idx] -= self.config.learning_rate * error * h
+        V_neg = self.W_out[noise_indices]
+
+        z_neg = V_neg @ h
+        error = sigmoid(z_neg)
+        loss_neg = np.logaddexp(0.0, z_neg).sum()
+        grad_h += error @ V_neg
+        neg_updates = -self.config.learning_rate * error[:, None] * h[None, :]
+        np.add.at(self.W_out, noise_indices, neg_updates)
 
         self.W_in[center_idx] -= self.config.learning_rate * grad_h
-        return loss_pos + loss_neg
+
+        return float(loss_pos + loss_neg)
 
     def _get_k_neg_samples(self) -> np.ndarray:
         return self.rng.choice(
