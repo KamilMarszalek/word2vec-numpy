@@ -5,7 +5,7 @@ import numpy as np
 from .data import iter_train_data
 
 
-def sigmoid(x):
+def sigmoid(x: float | np.ndarray) -> float | np.ndarray:
     x = np.asarray(x, dtype=np.float64)
     out = np.empty_like(x)
 
@@ -43,7 +43,7 @@ class Word2VecSGNS:
         self.corpus = corpus
         self.word_to_id = word_to_id
         self.id_to_word = id_to_word
-        self.loss_history = []
+        self.loss_history: list[float] = []
         self.W_in = self.rng.uniform(
             -0.5 / self.config.emb_dim,
             0.5 / self.config.emb_dim,

@@ -24,7 +24,7 @@ def find_closest(
     W_in: np.ndarray,
     id_to_word: list[str],
 ) -> str:
-    best = -1
+    best = -np.inf
     best_ind = -1
     for ind, elem in enumerate(W_in):
         score = cosine_similarity(vector, elem)
