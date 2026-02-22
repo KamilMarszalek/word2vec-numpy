@@ -14,7 +14,7 @@ class WordEmbeddings:
         W_out: np.ndarray,
         word_to_id: dict[str, int],
         id_to_word: list[str],
-    ):
+    ) -> None:
         self.W_in = W_in
         self.W_out = W_out
         self.word_to_id = word_to_id
