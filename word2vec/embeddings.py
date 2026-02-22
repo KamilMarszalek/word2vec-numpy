@@ -30,7 +30,7 @@ class WordEmbeddings:
 
         return cosine_similarity(h1, h2)
 
-    def find_closest(
+    def _find_closest(
         self,
         vector: np.ndarray,
         topn: int = 1,
@@ -59,3 +59,43 @@ class WordEmbeddings:
             score = scores[idx]
             results.append((word, float(score)))
         return results
+
+    def most_similar(
+        self,
+        word: str,
+        topn: int = 10,
+    ) -> list[tuple[str, float]]:
+        if word not in self.word_to_id:
+            raise KeyError(f"Word not in vocabulary: {word}")
+        idx = self.word_to_id[word]
+        return self._find_closest(
+            self.W_in[idx],
+            topn=topn,
+            exclude_ids=[idx],
+        )
+
+    def analogy(
+        self,
+        a: str,
+        b: str,
+        c: str,
+        topn: int = 10,
+    ) -> list[tuple[str, float]]:
+        """
+        Solve analogy: a : b :: c : ?  => vec(b) - vec(a) + vec(c)
+        Example: man : king :: woman : ? -> queen
+        """
+        for word in (a, b, c):
+            if word not in self.word_to_id:
+                raise KeyError(f"Word not in vocabulary: {word}")
+
+        a_idx = self.word_to_id[a]
+        b_idx = self.word_to_id[b]
+        c_idx = self.word_to_id[c]
+
+        target = self.W_in[b_idx] - self.W_in[a_idx] + self.W_in[c_idx]
+        return self._find_closest(
+            target,
+            topn=topn,
+            exclude_ids=[a_idx, b_idx, c_idx],
+        )
