@@ -114,16 +114,11 @@ class Word2VecSGNS:
         self.W_in[center_idx] -= self.config.learning_rate * grad_h
         return loss_pos + loss_neg
 
-    def _get_k_neg_samples(self, context_idx: int, center_idx: int) -> np.ndarray:
+    def _get_k_neg_samples(self) -> np.ndarray:
         output: list[int] = []
-        forbidden = {context_idx, center_idx}
-        if self.unigram_probs.shape[0] <= len(forbidden):
-            raise ValueError("No valid negative sample can be drawn.")
-        while len(output) < self.config.num_of_neg_samples:
+        for _ in range(self.config.num_of_neg_samples):
             noise_idx = self.rng.choice(
                 self.unigram_probs.shape[0], p=self.unigram_probs
             )
-            if noise_idx in forbidden:
-                continue
             output.append(noise_idx)
         return np.array(output)
