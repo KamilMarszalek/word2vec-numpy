@@ -154,7 +154,7 @@ uv run python main.py use models/corpus analogy man king woman --topn 5
 
 A trained model is stored in a directory (typically named after the dataset), using NumPy arrays and JSON files.
 
-Depending on your current `main.py` version, artifacts may include:
+A trained model saves the following artifacts:
 
 - `W_in.npy` — input embeddings matrix
 - `W_out.npy` — output embeddings matrix
