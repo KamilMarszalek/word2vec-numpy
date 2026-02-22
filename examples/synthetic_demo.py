@@ -75,12 +75,6 @@ if __name__ == "__main__":
         embeddings.get_similarity_between_words("king", "man"),
     )
 
-    target_vector = (
-        embeddings.W_in[word_to_id["king"]]
-        - embeddings.W_in[word_to_id["man"]]
-        + embeddings.W_in[word_to_id["woman"]]
-    )
-
     print('"king" - "man" + "woman"')
     print("Expected: queen")
     print("Result:", embeddings.analogy("man", "king", "woman", 1)[0][0])
