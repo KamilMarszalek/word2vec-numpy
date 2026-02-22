@@ -1,7 +1,7 @@
 [project]
 name = "word2vec-numpy"
 version = "0.1.0"
-description = "Add your description here"
+description = "Word2Vec algorithm implementation in Python using NumPy"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
