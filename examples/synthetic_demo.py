@@ -87,11 +87,11 @@ if __name__ == "__main__":
         "Result:",
         embeddings.find_closest(
             target_vector,
-            topn=2,
+            topn=1,
             exclude_ids=[
                 word_to_id["king"],
                 word_to_id["man"],
                 word_to_id["woman"],
             ],
-        ),
+        )[0][0],
     )
