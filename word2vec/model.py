@@ -89,12 +89,8 @@ class Word2VecSGNS:
         self.W_out[context_idx] -= self.config.learning_rate * error * h
 
         loss_neg = 0.0
-        for _ in range(self.config.num_of_neg_samples):
-            noise_idx = self.rng.choice(
-                self.unigram_probs.shape[0], p=self.unigram_probs
-            )
-            if noise_idx in {context_idx, center_idx}:
-                continue
+        noise_indices = self._get_k_neg_samples(context_idx, center_idx)
+        for noise_idx in noise_indices:
             v_neg = self.W_out[noise_idx]
             z_neg = h @ v_neg
             error = sigmoid(z_neg)
@@ -104,3 +100,14 @@ class Word2VecSGNS:
 
         self.W_in[center_idx] -= self.config.learning_rate * grad_h
         return loss_pos + loss_neg
+
+    def _get_k_neg_samples(self, context_idx: int, center_idx: int) -> np.ndarray:
+        output = []
+        while len(output) < self.config.num_of_neg_samples:
+            noise_idx = self.rng.choice(
+                self.unigram_probs.shape[0], p=self.unigram_probs
+            )
+            if noise_idx in {context_idx, center_idx}:
+                continue
+            output.append(noise_idx)
+        return np.array(output)
