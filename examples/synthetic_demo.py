@@ -83,15 +83,4 @@ if __name__ == "__main__":
 
     print('"king" - "man" + "woman"')
     print("Expected: queen")
-    print(
-        "Result:",
-        embeddings.find_closest(
-            target_vector,
-            topn=1,
-            exclude_ids=[
-                word_to_id["king"],
-                word_to_id["man"],
-                word_to_id["woman"],
-            ],
-        )[0][0],
-    )
+    print("Result:", embeddings.analogy("man", "king", "woman", 1)[0][0])
