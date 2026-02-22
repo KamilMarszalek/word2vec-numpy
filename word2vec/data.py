@@ -18,6 +18,9 @@ def preprocess(
         str.maketrans("", "", string.punctuation)
     )
     words = lowercase_no_punctuation.split()
+    if not words:
+        raise ValueError("Input text is empty after preprocessing")
+
     words_counter = Counter(words)
 
     id_to_word = list(dict.fromkeys(words))
