@@ -5,8 +5,17 @@ import numpy as np
 from .data import iter_train_data
 
 
-def sigmoid(x: np.ndarray | int) -> float | np.ndarray:
-    return 1 / (1 + np.exp(-x))
+def sigmoid(x):
+    x = np.asarray(x, dtype=np.float64)
+    out = np.empty_like(x)
+
+    pos = x >= 0
+    out[pos] = 1.0 / (1.0 + np.exp(-x[pos]))
+
+    expx = np.exp(x[~pos])
+    out[~pos] = expx / (1.0 + expx)
+
+    return out.item() if out.ndim == 0 else out
 
 
 @dataclass
@@ -57,10 +66,11 @@ class Word2VecSGNS:
                 self.rng,
             ):
                 loss = self._train_step(center, context)
-                self.loss_history.append(loss)
                 epoch_loss_sum += loss
                 steps += 1
-            print(f"Epoch {epoch + 1} loss: {epoch_loss_sum / steps:.4f}")
+            mean_loss = epoch_loss_sum / steps
+            self.loss_history.append(mean_loss)
+            print(f"Epoch {epoch + 1} loss: {mean_loss:.4f}")
 
         return self.W_in, self.W_out
 
@@ -83,6 +93,8 @@ class Word2VecSGNS:
             noise_idx = self.rng.choice(
                 self.unigram_probs.shape[0], p=self.unigram_probs
             )
+            if noise_idx in {context_idx, center_idx}:
+                continue
             v_neg = self.W_out[noise_idx]
             z_neg = h @ v_neg
             error = sigmoid(z_neg)
