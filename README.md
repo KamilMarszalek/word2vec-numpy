@@ -174,23 +174,23 @@ This section describes the exact objective and gradients implemented in this pro
 
 For each position in the corpus, let:
 
-- $w_c$ = center word
-- $w_o$ = observed (positive) context word
-- $w_{n_1}, \dots, w_{n_K}$ = negative samples
+- $`w_c`$ = center word
+- $`w_o`$ = observed (positive) context word
+- $`w_{n_1}, \dots, w_{n_K}`$ = negative samples
 
 Word2Vec SGNS maintains **two embedding matrices**:
 
-- $W_{in} \in \mathbb{R}^{|V| \times d}$ — input embeddings (center words)
-- $W_{out} \in \mathbb{R}^{|V| \times d}$ — output embeddings (context/target words)
+- $`W_{in} \in \mathbb{R}^{|V| \times d}`$ — input embeddings (center words)
+- $`W_{out} \in \mathbb{R}^{|V| \times d}`$ — output embeddings (context/target words)
 
 For a training pair:
-- $h = W_{in}[w_c]$ (center embedding, shape $d$)
-- $v_o = W_{out}[w_o]$ (positive context embedding)
-- $v_{n_i} = W_{out}[w_{n_i}]$ (negative context embeddings)
+- $`h = W_{in}[w_c]`$ (center embedding, shape $d$)
+- $`v_o = W_{out}[w_o]`$ (positive context embedding)
+- $`v_{n_i} = W_{out}[w_{n_i}]`$ (negative context embeddings)
 
 Define scores:
-- Positive score: $z_{pos} = v_o^\top h$
-- Negative scores: $z_i = v_{n_i}^\top h$
+- Positive score: $`z_{pos} = v_o^\top h`$
+- Negative scores: $`z_i = v_{n_i}^\top h`$
 
 ---
 
@@ -198,23 +198,23 @@ Define scores:
 
 For one positive pair and $K$ negatives:
 
-$$
+```math
 \mathcal{L}
 =
 -\log \sigma(z_{pos})
 -
 \sum_{i=1}^{K}\log \sigma(-z_i)
-$$
+```
 
-where $\sigma(x)$ is the sigmoid function:
+where $`\sigma(x)`$ is the sigmoid function:
 
-$$
+```math
 \sigma(x)=\frac{1}{1+e^{-x}}
-$$
+```
 
 This objective:
-- pushes $z_{pos}$ **up** (positive pair should match)
-- pushes $z_i$ **down** for negative samples
+- pushes $`z_{pos}`$ **up** (positive pair should match)
+- pushes $`z_i`$ **down** for negative samples
 
 ---
 
@@ -222,13 +222,13 @@ This objective:
 
 Instead of computing the logs of sigmoids directly, the implementation uses stable identities:
 
-$$
+```math
 -\log \sigma(z) = \log(1 + e^{-z}) = \text{softplus}(-z)
-$$
+```
 
-$$
+```math
 -\log \sigma(-z) = \log(1 + e^{z}) = \text{softplus}(z)
-$$
+```
 
 In NumPy:
 
@@ -245,31 +245,31 @@ This avoids numerical issues for large positive/negative scores.
 
 Let
 
-$$
+```math
 \mathcal{L}_{pos} = -\log \sigma(z_{pos}), \quad z_{pos}=v_o^\top h
-$$
+```
 
 Then:
 
-$$
+```math
 \frac{\partial \mathcal{L}_{pos}}{\partial z_{pos}} = \sigma(z_{pos}) - 1
-$$
+```
 
 Define:
 
-$$
+```math
 e_{pos} = \sigma(z_{pos}) - 1
-$$
+```
 
 Gradients:
 
-$$
+```math
 \frac{\partial \mathcal{L}_{pos}}{\partial h} = e_{pos} \, v_o
-$$
+```
 
-$$
+```math
 \frac{\partial \mathcal{L}_{pos}}{\partial v_o} = e_{pos} \, h
-$$
+```
 
 ---
 
@@ -277,39 +277,39 @@ $$
 
 For one negative sample:
 
-$$
+```math
 \mathcal{L}_{neg,i} = -\log \sigma(-z_i), \quad z_i=v_{n_i}^\top h
-$$
+```
 
 Then:
 
-$$
+```math
 \frac{\partial \mathcal{L}_{neg,i}}{\partial z_i} = \sigma(z_i)
-$$
+```
 
 Define:
 
-$$
+```math
 e_i = \sigma(z_i)
-$$
+```
 
 Gradients:
 
-$$
+```math
 \frac{\partial \mathcal{L}_{neg,i}}{\partial h} = e_i \, v_{n_i}
-$$
+```
 
-$$
+```math
 \frac{\partial \mathcal{L}_{neg,i}}{\partial v_{n_i}} = e_i \, h
-$$
+```
 
 Summed over all negatives:
 
-$$
+```math
 \frac{\partial \mathcal{L}_{neg}}{\partial h}
 =
 \sum_{i=1}^{K} e_i v_{n_i}
-$$
+```
 
 ---
 
@@ -317,7 +317,7 @@ $$
 
 The total gradient w.r.t. the center embedding is:
 
-$$
+```math
 \frac{\partial \mathcal{L}}{\partial h}
 =
 \frac{\partial \mathcal{L}_{pos}}{\partial h}
@@ -327,7 +327,7 @@ $$
 (\sigma(z_{pos}) - 1)v_o
 +
 \sum_{i=1}^{K}\sigma(z_i)v_{n_i}
-$$
+```
 
 This is exactly what the code accumulates in `grad_h`.
 
@@ -335,19 +335,19 @@ This is exactly what the code accumulates in `grad_h`.
 
 ### 6. SGD parameter updates
 
-With learning rate $\eta$, parameters are updated by standard SGD:
+With learning rate $`\eta`$, parameters are updated by standard SGD:
 
-$$
+```math
 h \leftarrow h - \eta \frac{\partial \mathcal{L}}{\partial h}
-$$
+```
 
-$$
+```math
 v_o \leftarrow v_o - \eta \frac{\partial \mathcal{L}}{\partial v_o}
-$$
+```
 
-$$
+```math
 v_{n_i} \leftarrow v_{n_i} - \eta \frac{\partial \mathcal{L}_{neg,i}}{\partial v_{n_i}}
-$$
+```
 
 In implementation terms:
 - positive context row in `W_out` gets one update
@@ -362,26 +362,26 @@ Instead of looping through negative samples one by one, the project computes the
 
 Let:
 
-- $V_{neg} \in \mathbb{R}^{K \times d}$ be the stacked negative output embeddings
-- $h \in \mathbb{R}^{d}$
+- $`V_{neg} \in \mathbb{R}^{K \times d}`$ be the stacked negative output embeddings
+- $`h \in \mathbb{R}^{d}`$
 
 Then:
 
-$$
+```math
 z_{neg} = V_{neg}h \in \mathbb{R}^{K}
-$$
+```
 
-$$
+```math
 e_{neg} = \sigma(z_{neg}) \in \mathbb{R}^{K}
-$$
+```
 
 The negative contribution to the center gradient becomes:
 
-$$
+```math
 \frac{\partial \mathcal{L}_{neg}}{\partial h}
 =
 e_{neg}^{\top} V_{neg}
-$$
+```
 
 which is implemented as:
 
@@ -406,17 +406,17 @@ This is an important detail—simple advanced indexing assignment would be incor
 
 ---
 
-### 8. Negative sampling distribution: unigram$^{0.75}$
+### 8. Negative sampling distribution (smoothed unigram, power 0.75)
 
 Negative words are sampled from a smoothed unigram distribution:
 
-$$
+```math
 P(w) \propto \text{count}(w)^{0.75}
-$$
+```
 
 This is the standard choice used in Word2Vec and usually works better than:
-- raw unigram distribution ($\alpha = 1$)
-- uniform sampling ($\alpha = 0$)
+- raw unigram distribution ($`\alpha = 1`$)
+- uniform sampling ($`\alpha = 0`$)
 
 It reduces over-sampling of very frequent words while still preserving corpus frequency information.
 
@@ -426,8 +426,8 @@ It reduces over-sampling of very frequent words while still preserving corpus fr
 
 ### Stable sigmoid
 The sigmoid is implemented in a numerically stable piecewise form:
-- one branch for $x \ge 0$
-- another branch for $x < 0$
+- one branch for $`x \ge 0`$
+- another branch for $`x < 0`$
 
 This avoids overflow in expressions like `exp(1000)`.
 
