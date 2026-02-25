@@ -133,22 +133,7 @@ create_subset() {
   fi
 
   echo "Creating subset: $out_file (${n_tokens} tokens)"
-  uv run python - "$in_file" "$out_file" "$n_tokens" <<'PY'
-from pathlib import Path
-import sys
-
-in_file = Path(sys.argv[1])
-out_file = Path(sys.argv[2])
-n_tokens = int(sys.argv[3])
-
-text = in_file.read_text(encoding="utf-8")
-tokens = text.split()
-subset = " ".join(tokens[:n_tokens])
-
-out_file.parent.mkdir(parents=True, exist_ok=True)
-out_file.write_text(subset, encoding="utf-8")
-print(f"Wrote {min(len(tokens), n_tokens)} tokens to {out_file}")
-PY
+  uv run python -m utils.get_tokens "$in_file" "$out_file" "$n_tokens"
 }
 
 create_subset "$DATASET" "$OUT_ROOT/subsets/text8_100k.txt" 100000
