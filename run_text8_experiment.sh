@@ -1,6 +1,62 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+DATASET="data/text8"
+OUT_ROOT="experiments/text8"
+SEED=42
+
+DOWNLOAD_TEXT8=0
+FORCE_DOWNLOAD_TEXT8=0
+TEXT8_URL="http://mattmahoney.net/dc/text8.zip"
+
+usage() {
+  cat <<EOF
+Usage: $0 [options]
+
+Options:
+  --download-text8         Download text8 automatically if missing
+  --force-download-text8   Re-download text8 even if data/text8 exists
+  --dataset PATH           Path to dataset file (default: data/text8)
+  --out-root PATH          Output root directory (default: experiments/text8)
+  --seed N                 Random seed (default: 42)
+  -h, --help               Show this help message
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --download-text8)
+      DOWNLOAD_TEXT8=1
+      shift
+      ;;
+    --force-download-text8)
+      DOWNLOAD_TEXT8=1
+      FORCE_DOWNLOAD_TEXT8=1
+      shift
+      ;;
+    --dataset)
+      DATASET="${2:?Missing value for --dataset}"
+      shift 2
+      ;;
+    --out-root)
+      OUT_ROOT="${2:?Missing value for --out-root}"
+      shift 2
+      ;;
+    --seed)
+      SEED="${2:?Missing value for --seed}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "ERROR: Unknown argument: $1" >&2
+      usage
+      exit 1
+      ;;
+  esac
+done
 
 
 DATASET="data/text8"
@@ -13,9 +69,50 @@ if [[ ! -f "main.py" ]]; then
   exit 1
 fi
 
+download_text8_if_needed() {
+  local dataset_path="$1"
+
+  
+  if [[ "$DOWNLOAD_TEXT8" -ne 1 ]]; then
+    return
+  fi
+
+  local dataset_dir
+  dataset_dir="$(dirname "$dataset_path")"
+  local zip_path="${dataset_dir}/text8.zip"
+
+  mkdir -p "$dataset_dir"
+
+  if [[ -f "$dataset_path" && "$FORCE_DOWNLOAD_TEXT8" -ne 1 ]]; then
+    echo "text8 already exists: $dataset_path (skipping download)"
+    return
+  fi
+
+  echo "==> Downloading text8 from: $TEXT8_URL"
+
+  if command -v curl >/dev/null 2>&1; then
+    curl -L --fail --output "$zip_path" "$TEXT8_URL"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -O "$zip_path" "$TEXT8_URL"
+  else
+    echo "ERROR: Neither curl nor wget is available for downloading text8." >&2
+    exit 1
+  fi
+
+  echo "==> Extracting $zip_path -> $dataset_dir"
+
+  
+  uv run python -m utils.unzip "$zip_path" "$dataset_dir" || {
+    echo "ERROR: Failed to unzip $zip_path" >&2
+    exit 1
+  }
+}
+
+download_text8_if_needed "$DATASET"
+
 if [[ ! -f "$DATASET" ]]; then
   echo "ERROR: dataset file not found: $DATASET" >&2
-  echo "Put text8 in ./data/text8 and run again." >&2
+  echo "Use --download-text8 or put text8 in ./data/text8" >&2
   exit 1
 fi
 
