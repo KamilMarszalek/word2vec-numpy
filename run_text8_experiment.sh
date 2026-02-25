@@ -58,12 +58,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-
-DATASET="data/text8"
-OUT_ROOT="experiments/text8"
-SEED=42
-
-
 if [[ ! -f "main.py" ]]; then
   echo "ERROR: main.py not found. Run this script from the project root." >&2
   exit 1
